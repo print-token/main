@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A4 Page with Image</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <style>
+    /* Base styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Set up an A4-sized page */
+    .a4-page {
+      width: 210mm; /* A4 width */
+      height: 297mm; /* A4 height */
+      background-color: white;
+      border: 1px solid #000;
+      margin: auto;
+      display: flex;
+      justify-content: flex-start;
+      align-items: flex-start;
+      position: relative;
+    }
+
+    /* Image container with exact dimensions */
+    .image-container {
+      width: 109mm; /* Image width */
+      height: 139mm; /* Image height */
+      background-color: #e0e0e0; /* Placeholder color */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .image-container img {
+      width: 100%; /* Ensure it fills the container */
+      height: 100%; /* Ensure it fills the container */
+      object-fit: cover; /* Ensure the image fills the container completely */
+    }
+
+    /* Ensure the A4 page fits on Android screens */
+    html, body {
+      height: 100%;
+      background-color: #ffffff; /* Background outside the page */
+    }
+
+    /* For mobile responsiveness */
+    @media (max-width: 600px) {
+      .a4-page {
+        transform: scale(0.5); /* Scale down for smaller screens */
+        transform-origin: top left;
+      }
+    }
+
+    /* Style for the container holding the buttons */
+    .controls {
+    	position:relative;
+      text-align: center;
+      margin-top: 0px;
+    }
+
+    /* Style for the button */
+    .download-btn {
+      display: inline-block;
+      margin: 10px;
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .download-btn:hover {
+      background-color: #0056b3;
+    }
+
+    /* Style for file input */
+    .file-input {
+      display: inline-block;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="a4-page" id="a4-page">
+    <div class="image-container">
+      <img id="image" alt="Image">
+    </div>
+  </div>
+  <div class="controls">
+    <!-- File input to pick an image -->
+    <input type="file" class="file-input" id="file-input" accept="image/*" onchange="loadImage(event)">
+
+    <!-- Button to download PDF -->
+    <button class="download-btn" onclick="generatePDF()">Download PDF</button>
+  </div>
+
+  <!-- Container for controls (file input and download button) -->
+  
+
+  <script>
+    // Function to load the selected image dynamically
+    function loadImage(event) {
+      const imageElement = document.getElementById('image');
+      const file = event.target.files[0];
+      const reader = new FileReader();
+
+      reader.onload = function (e) {
+        imageElement.src = e.target.result; // Set the img src to the selected file
+      };
+
+      reader.readAsDataURL(file); // Read the file as a data URL
+    }
+
+    // Function to generate the PDF
+    async function generatePDF() {
+      const { jsPDF } = window.jspdf;
+
+      // Create a jsPDF instance
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      // Select the A4 page
+      const a4Page = document.getElementById('a4-page');
+
+      // Render the A4 page as a high-resolution canvas
+      const canvas = await html2canvas(a4Page, {
+        scale: 16, // Adjust scale as needed for image quality
+        useCORS: true,
+      });
+
+      // Convert the canvas to a compressed image (JPG or compressed PNG)
+      const imgData = canvas.toDataURL('image/jpeg', 0.75); // 0.75 for moderate compression
+
+      // Add the image to the PDF with A4 dimensions
+      pdf.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+
+      // Save the PDF
+      pdf.save('A4_Page_Compressed.pdf');
+    }
+  </script>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+</body>
+</html>
